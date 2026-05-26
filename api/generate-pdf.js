@@ -1,6 +1,9 @@
 const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
 
+chromium.setHeadlessMode = true;
+chromium.setGraphicsMode = false;
+
 module.exports = async (req, res) => {
 
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,16 +23,17 @@ module.exports = async (req, res) => {
   let browser = null;
 
   try {
+    const executablePath = await chromium.executablePath();
+    
     browser = await puppeteer.launch({
-  args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-  defaultViewport: chromium.defaultViewport,
-  executablePath: await chromium.executablePath('/tmp/localChromium/chromium/mac_arm-1350406/chrome-mac/Chromium.app/Contents/MacOS/Chromium'),
-  headless: true,
-});
+      args: chromium.args,
+      defaultViewport: { width: 794, height: 1123 },
+      executablePath: executablePath,
+      headless: true,
+      ignoreHTTPSErrors: true,
+    });
 
     const page = await browser.newPage();
-
-    await page.setViewport({ width: 794, height: 1123 });
 
     await page.goto(url, { 
       waitUntil: 'networkidle0',
@@ -68,8 +72,8 @@ module.exports = async (req, res) => {
     res.send(pdf);
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to generate PDF' });
+    console.error('PDF Error:', error.message);
+    res.status(500).json({ error: error.message });
 
   } finally {
     if (browser) await browser.close();
