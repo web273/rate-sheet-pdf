@@ -1,8 +1,5 @@
-const chromium = require('@sparticuz/chromium');
+const chromium = require('@sparticuz/chromium-min');
 const puppeteer = require('puppeteer-core');
-
-chromium.setHeadlessMode = true;
-chromium.setGraphicsMode = false;
 
 module.exports = async (req, res) => {
 
@@ -23,21 +20,28 @@ module.exports = async (req, res) => {
   let browser = null;
 
   try {
-    const executablePath = await chromium.executablePath();
-    
     browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--single-process'
+      ],
       defaultViewport: { width: 794, height: 1123 },
-      executablePath: executablePath,
-      headless: true,
+      executablePath: await chromium.executablePath(
+        'https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar'
+      ),
+      headless: 'new',
       ignoreHTTPSErrors: true,
     });
 
     const page = await browser.newPage();
 
-    await page.goto(url, { 
+    await page.goto(url, {
       waitUntil: 'networkidle0',
-      timeout: 25000 
+      timeout: 25000
     });
 
     await page.evaluate(() => {
