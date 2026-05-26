@@ -21,11 +21,11 @@ module.exports = async (req, res) => {
 
   try {
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    });
+  args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+  defaultViewport: chromium.defaultViewport,
+  executablePath: await chromium.executablePath('/tmp/localChromium/chromium/mac_arm-1350406/chrome-mac/Chromium.app/Contents/MacOS/Chromium'),
+  headless: true,
+});
 
     const page = await browser.newPage();
 
